@@ -17,7 +17,6 @@ public class Album implements Serializable{
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-
 	private Long id;//编号
 
 
