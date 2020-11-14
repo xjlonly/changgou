@@ -13,6 +13,28 @@ import java.util.List;
  *****/
 public interface SpuService {
 
+
+    /***
+     * 还原被删除商品
+     * @param spuId
+     */
+    void restore(Long spuId);
+
+
+    /***
+     * 逻辑删除
+     * @param spuId
+     */
+    void logicDelete(Long spuId);
+    /**
+     *
+     * 批量下架
+     */
+    int pullMany(Long[] ids);
+
+    /*
+    * 批量上架
+    * */
     int putMany(Long[] ids);
 
     /***

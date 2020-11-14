@@ -1,6 +1,8 @@
 server:
   port: 18081
 spring:
+  main:
+    allow-bean-definition-overriding: true
   application:
     name: goods
   datasource:
@@ -17,6 +19,7 @@ eureka:
 feign:
   hystrix:
     enabled: true
+
 mybatis:
   configuration:
     map-underscore-to-camel-case: true

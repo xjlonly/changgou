@@ -1,0 +1,49 @@
+server:
+  port: 18083
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  application:
+    name: canal
+  redis:
+    host: 139.199.117.109
+    port: 6379
+    password: 12345ok12345
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:7001/eureka
+  instance:
+    prefer-ip-address: true
+feign:
+  hystrix:
+    enabled: true
+#hystrix 配置
+hystrix:
+  command:
+    default:
+      execution:
+        timeout:
+          #如果enabled设置为false，则请求超时交给ribbon控制
+          enabled: true
+        isolation:
+          strategy: SEMAPHORE
+#canal配置
+canal:
+  client:
+    instances:
+      example:
+        host: 139.199.117.109
+        port: 11111
+
+#canal:
+#  # instance 实例所在ip
+#  host: 139.199.117.109
+#  # tcp通信端口
+#  port: 11111
+##  # 账号  canal-admin application.yml 设置的
+##  username: admin
+##  # 密码
+##  password: leitest
+##  #实例名称
+#  instance: example

@@ -7,6 +7,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import tk.mybatis.mapper.entity.Example;
 
@@ -26,6 +27,7 @@ public class SkuServiceImpl implements SkuService {
     /*
     * 扣减库存
     * */
+    @Transactional
     public boolean deductionNum(Long id, Integer num){
         var sku =  skuMapper.selectByPrimaryKey(id);
         if(sku.getNum() < num){

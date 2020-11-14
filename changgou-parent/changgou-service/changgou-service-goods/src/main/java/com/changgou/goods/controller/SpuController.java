@@ -30,6 +30,28 @@ public class SpuController {
     private SkuService skuService;
 
     /**
+     * 恢复数据
+     * @param id
+     * @return
+     */
+    @PutMapping("/restore/{id}")
+    public Result restore(@PathVariable Long id){
+        spuService.restore(id);
+        return new Result(true,StatusCode.OK,"数据恢复成功！");
+    }
+
+    /**
+     * 逻辑删除
+     * @param id
+     * @return
+     */
+    @DeleteMapping("/logic/delete/{id}")
+    public Result logicDelete(@PathVariable Long id){
+        spuService.logicDelete(id);
+        return new Result(true,StatusCode.OK,"逻辑删除成功！");
+    }
+
+    /**
      *  批量上架
      * @param ids
      * @return
@@ -37,6 +59,17 @@ public class SpuController {
     @PutMapping("/put/many")
     public Result putMany(@RequestBody Long[] ids){
         int count = spuService.putMany(ids);
+        return new Result(true,StatusCode.OK,"上架"+count+"个商品");
+    }
+
+    /*
+     *  批量下架
+     * @param ids
+     * @return
+             */
+    @PutMapping("/pull/many")
+    public Result pullMany(@RequestBody Long[] ids){
+        int count = spuService.pullMany(ids);
         return new Result(true,StatusCode.OK,"上架"+count+"个商品");
     }
 

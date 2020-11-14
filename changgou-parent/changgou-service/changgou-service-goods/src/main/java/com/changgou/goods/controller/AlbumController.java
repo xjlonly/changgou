@@ -25,6 +25,8 @@ public class AlbumController {
     @Autowired
     private AlbumService albumService;
 
+
+
     /***
      * Album分页条件搜索实现
      * @param album
