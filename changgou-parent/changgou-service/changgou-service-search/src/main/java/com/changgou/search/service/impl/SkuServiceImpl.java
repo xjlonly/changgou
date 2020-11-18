@@ -21,6 +21,7 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilde
 import org.springframework.data.redis.connection.RedisZSetCommands;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,27 +58,65 @@ public class SkuServiceImpl implements SkuService {
     @Autowired
     private   ElasticsearchTemplate elasticsearchTemplate;
 
-    @Override
-    public Map<String, Object> search(Map<String, String> map) {
+    /*
+    * 构建条件查询器
+    * */
+    private NativeSearchQueryBuilder buildBaseQuery(Map<String,String> map){
         NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder();
         if(map != null && map.size() > 0){
             String keyword = map.get("keywords");
             if(!StringUtil.isNullOrEmpty(keyword)){
                 nativeSearchQueryBuilder.withQuery(QueryBuilders.matchQuery("name", keyword));
-                nativeSearchQueryBuilder.addAggregation(AggregationBuilders.terms("skuCategorygroup").field("categoryName").size(50));
             }
         }
+        nativeSearchQueryBuilder.addAggregation(AggregationBuilders.terms("skuCategoryGroup").field("categoryName").size(50));
+        nativeSearchQueryBuilder.addAggregation(AggregationBuilders.terms("skuBrandGroup").field("brandName").size(50));
+        nativeSearchQueryBuilder.addAggregation(AggregationBuilders.terms("skuSpecGroup").field("spec.keyword").size(50));
+        return nativeSearchQueryBuilder;
+    }
+    @Override
+    public Map<String, Object> search(Map<String, String> map) {
+        NativeSearchQueryBuilder nativeSearchQueryBuilder = buildBaseQuery(map);
+        return searchList(nativeSearchQueryBuilder);
+    }
+
+    private Map<String, Object> searchList(NativeSearchQueryBuilder nativeSearchQueryBuilder) {
         AggregatedPage<SkuInfo> aggregatedPage = elasticsearchTemplate.queryForPage(nativeSearchQueryBuilder.build(), SkuInfo.class);
         //获取分组结果
-        StringTerms stringTerms =  (StringTerms) aggregatedPage.getAggregation("skuCategorygroup");
+        StringTerms stringTerms =  (StringTerms) aggregatedPage.getAggregation("skuCategoryGroup");
+        List<String> categoryList = getStringsGroupList(stringTerms);
+
+        List<String> brandList = getStringsGroupList((StringTerms)aggregatedPage.getAggregation("skuBrandGroup"));
+
+        var esult = aggregatedPage.getAggregation("skuSpecGroup");
 
         //封装一个Map存储所有数据 并返回
         Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("categoryList", categoryList);
+        resultMap.put("brandList",brandList);
+        //resultMap.put("specList",specList);
         resultMap.put("rows", aggregatedPage.getContent());
         resultMap.put("total", aggregatedPage.getTotalElements());
         resultMap.put("totalPages", aggregatedPage.getTotalPages());
         return resultMap;
     }
 
+
+    /**
+     * 获取分类列表数据
+     *
+     * @param stringTerms
+     * @return
+     */
+    private List<String> getStringsGroupList(StringTerms stringTerms) {
+        List<String> groupList = new ArrayList<>();
+        if (stringTerms != null) {
+            for (StringTerms.Bucket bucket : stringTerms.getBuckets()) {
+                String keyAsString = bucket.getKeyAsString();//分组的值
+                groupList.add(keyAsString);
+            }
+        }
+        return groupList;
+    }
 
 }
