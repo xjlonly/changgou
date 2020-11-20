@@ -8,14 +8,28 @@ import com.changgou.search.pojo.SkuInfo;
 import com.changgou.search.service.SkuService;
 import entity.Result;
 import io.netty.util.internal.StringUtil;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.common.text.Text;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
+import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
+import org.springframework.data.elasticsearch.core.SearchResultMapper;
 import org.springframework.data.elasticsearch.core.aggregation.AggregatedPage;
+import org.springframework.data.elasticsearch.core.aggregation.impl.AggregatedPageImpl;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 
@@ -53,48 +67,133 @@ public class SkuServiceImpl implements SkuService {
     * 构建条件查询器
     * */
     private NativeSearchQueryBuilder buildBaseQuery(Map<String,String> map){
+
+        //过滤查询
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder();
 
+        //高亮
+        nativeSearchQueryBuilder.withHighlightFields(buildField());
 
+        boolean hasSpec = false;
         if(map != null && map.size() > 0){
             String keyword = map.get("keywords");
             if(!StringUtil.isNullOrEmpty(keyword)){
-                //以名称为条件查询name分词后结果集
-                nativeSearchQueryBuilder.withQuery(QueryBuilders.matchQuery("name", keyword));
+                //设置主关键字查询
+                nativeSearchQueryBuilder.withQuery(QueryBuilders.multiMatchQuery(keyword,"name","brandName","categoryName"));
+            }
+            for(Map.Entry<String,String> entry : map.entrySet()){
+                String key = entry.getKey();
+                if(key.startsWith("spec_")){
+                    hasSpec =true;
+                    String value = entry.getValue();
+                    boolQueryBuilder.filter(QueryBuilders.termQuery("specMap." +  key.replace("spec_","") + ".keyword",value));
+                }
             }
         }
+
+        //当用户选择了分类。将分类作为搜索条件，则不需要对分类进行分组搜索。因为分组搜索的数据是用于显示分类搜索条件
         //aggregationBuilder 聚合搜索 按列名进行分组聚合
-        nativeSearchQueryBuilder.addAggregation(AggregationBuilders.terms("skuCategoryGroup").field("categoryName").size(50));
-        nativeSearchQueryBuilder.addAggregation(AggregationBuilders.terms("skuBrandGroup").field("brandName").size(50));
+        if(map != null && map.get("category") != null){
+            boolQueryBuilder.filter(QueryBuilders.termQuery("categoryName",map.get("category")));
+        }else {
+            nativeSearchQueryBuilder.addAggregation(AggregationBuilders.terms("skuCategoryGroup").field("categoryName").size(10000));
+        }
+
+        if(map != null && map.get("brand") != null){
+            boolQueryBuilder.filter(QueryBuilders.termQuery("brandName",map.get("brand")));
+        }else{
+            nativeSearchQueryBuilder.addAggregation(AggregationBuilders.terms("skuBrandGroup").field("brandName").size(10000));
+        }
+
         //规格数据分组查询 keywrod 不进行分词
-        nativeSearchQueryBuilder.addAggregation(AggregationBuilders.terms("skuSpecGroup").field("spec.keyword").size(10000));
+        if(!hasSpec){
+            nativeSearchQueryBuilder.addAggregation(AggregationBuilders.terms("skuSpecGroup").field("spec.keyword").size(10000));
+        }
+        nativeSearchQueryBuilder.withFilter(boolQueryBuilder);
+
+        //filter 价格过滤搜索
+        String price = map.get("price");
+        if(!StringUtil.isNullOrEmpty(price)){
+            price = price.replace("元", "").replace("以上","");
+            String[] prices = price.split("-");
+            if(prices.length > 0){
+                boolQueryBuilder.filter(QueryBuilders.rangeQuery("price").gt(Integer.parseInt(prices[0])));
+                if(prices.length == 2){
+                    boolQueryBuilder.filter(QueryBuilders.rangeQuery("price").lte(Integer.parseInt(prices[1])));
+                }
+            }
+        }
 
 
-        //filter 过滤搜索
+        //分页
+        int pageNum = covertPage(map);
+        int size =30;
+        nativeSearchQueryBuilder.withPageable(PageRequest.of(pageNum - 1,size));
+
+        //排序
+        String sortField = map.get("sortField");
+        String sortRule = map.get("Rule");
+        if(!StringUtils.isEmpty(sortField) && !StringUtils.isEmpty(sortRule)){
+            nativeSearchQueryBuilder.withSort(new FieldSortBuilder(sortField).order(sortRule.toUpperCase().equals("DESC")  ? SortOrder.DESC : SortOrder.ASC));
+        }
 
         return nativeSearchQueryBuilder;
     }
-    @Override
-    public Map<String, Object> search(Map<String, String> map) {
-        NativeSearchQueryBuilder nativeSearchQueryBuilder = buildBaseQuery(map);
-        return searchList(nativeSearchQueryBuilder);
+
+    private HighlightBuilder.Field buildField(){
+        //高亮搜索
+        HighlightBuilder.Field field = new HighlightBuilder.Field("name");//指定高亮域
+
+        //前缀 <em style="color:red">
+        field.preTags(" <em style=\"color:red\">");
+        field.postTags("</em>");
+        //碎片长度 关键词数据长度
+        field.fragmentSize(100);
+        return field;
     }
 
-    private Map<String, Object> searchList(NativeSearchQueryBuilder nativeSearchQueryBuilder) {
-        AggregatedPage<SkuInfo> aggregatedPage = elasticsearchTemplate.queryForPage(nativeSearchQueryBuilder.build(), SkuInfo.class);
-        //获取分组结果
-        StringTerms stringTerms =  (StringTerms) aggregatedPage.getAggregation("skuCategoryGroup");
-        List<String> categoryList = getStringsGroupList(stringTerms);
+    private int covertPage(Map<String, String> searchMap){
+        if(searchMap != null){
+            String pageNum = searchMap.get("pageNum");
+            if(!StringUtils.isEmpty(pageNum)){
+                try {
+                    return Integer.parseInt(pageNum);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }
+        return 1;
+    }
 
-        List<String> brandList = getStringsGroupList((StringTerms)aggregatedPage.getAggregation("skuBrandGroup"));
 
-        Map<String, Set<String>> specList = getSpecGroupList((StringTerms) aggregatedPage.getAggregation("skuSpecGroup"));
-
+    @Override
+    public Map<String, Object> search(Map<String, String> map) {
         //封装一个Map存储所有数据 并返回
         Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put("categoryList", categoryList);
-        resultMap.put("brandList",brandList);
-        resultMap.put("specList",specList);
+
+        NativeSearchQueryBuilder nativeSearchQueryBuilder = buildBaseQuery(map);
+        //AggregatedPage<SkuInfo> aggregatedPage = elasticsearchTemplate.queryForPage(nativeSearchQueryBuilder.build(), SkuInfo.class);
+        //SearchResultMapper 搜索之后的结果集映射 包含高亮数据时使用此方法
+        AggregatedPage<SkuInfo> aggregatedPage = elasticsearchTemplate.queryForPage(nativeSearchQueryBuilder.build(), SkuInfo.class, new SearchResultMapperImpl());
+
+        //获取分组结果
+        if(map.get("category") == null){
+            List<String> categoryList = getStringsGroupList((StringTerms) aggregatedPage.getAggregation("skuCategoryGroup"));
+            resultMap.put("categoryList", categoryList);
+        }
+
+        if(map.get("brand") == null){
+            List<String> brandList = getStringsGroupList((StringTerms)aggregatedPage.getAggregation("skuBrandGroup"));
+            resultMap.put("brandList",brandList);
+        }
+
+        Map<String, Set<String>> specList = getSpecGroupList((StringTerms) aggregatedPage.getAggregation("skuSpecGroup"));
+        if(specList.size() > 0){
+            resultMap.put("specList",specList);
+        }
+
         resultMap.put("rows", aggregatedPage.getContent());
         resultMap.put("total", aggregatedPage.getTotalElements());
         resultMap.put("totalPages", aggregatedPage.getTotalPages());
