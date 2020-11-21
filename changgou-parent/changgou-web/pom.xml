@@ -10,6 +10,16 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
     <description>所有需要渲染页面的服务工程</description>
+    <modules>
+        <module>changgou-web-search</module>
+    </modules>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
     <artifactId>changgou-web</artifactId>
 
 
