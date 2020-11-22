@@ -101,7 +101,7 @@ public class SkuServiceImpl implements SkuService {
             for(Map.Entry<String,String> entry : map.entrySet()){
                 String key = entry.getKey();
                 if(key.startsWith("spec_")){
-                    String value = entry.getValue();
+                    String value = entry.getValue().replace("\\","");
                     boolQueryBuilder.filter(QueryBuilders.termQuery("specMap." +  key.replace("spec_","") + ".keyword",value));
                 }
             }
@@ -121,7 +121,7 @@ public class SkuServiceImpl implements SkuService {
 
             //排序
             String sortField = map.get("sortField");
-            String sortRule = map.get("Rule");
+            String sortRule = map.get("sortRule");
             if(!StringUtils.isEmpty(sortField) && !StringUtils.isEmpty(sortRule)){
                 nativeSearchQueryBuilder.withSort(new FieldSortBuilder(sortField).order(sortRule.toUpperCase().equals("DESC")  ? SortOrder.DESC : SortOrder.ASC));
             }
@@ -133,8 +133,6 @@ public class SkuServiceImpl implements SkuService {
         int pageNum = covertPage(map);
         int size =30;
         nativeSearchQueryBuilder.withPageable(PageRequest.of(pageNum - 1,size));
-
-
 
         return nativeSearchQueryBuilder;
     }
@@ -174,7 +172,9 @@ public class SkuServiceImpl implements SkuService {
         NativeSearchQueryBuilder nativeSearchQueryBuilder = buildBaseQuery(map);
         //AggregatedPage<SkuInfo> aggregatedPage = elasticsearchTemplate.queryForPage(nativeSearchQueryBuilder.build(), SkuInfo.class);
         //SearchResultMapper 搜索之后的结果集映射 包含高亮数据时使用此方法
-        AggregatedPage<SkuInfo> aggregatedPage = elasticsearchTemplate.queryForPage(nativeSearchQueryBuilder.build(), SkuInfo.class, new SearchResultMapperImpl());
+        NativeSearchQuery query = nativeSearchQueryBuilder.build();
+        AggregatedPage<SkuInfo> aggregatedPage = elasticsearchTemplate.queryForPage(query, SkuInfo.class,
+                new SearchResultMapperImpl());
 
         //获取分组结果
         if(map.get("category") == null){
@@ -195,6 +195,9 @@ public class SkuServiceImpl implements SkuService {
         resultMap.put("rows", aggregatedPage.getContent());
         resultMap.put("total", aggregatedPage.getTotalElements());
         resultMap.put("totalPages", aggregatedPage.getTotalPages());
+
+        resultMap.put("pageSize", query.getPageable().getPageSize());
+        resultMap.put("pageNumber",query.getPageable().getPageNumber());
         return resultMap;
     }
 
