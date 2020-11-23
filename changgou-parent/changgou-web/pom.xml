@@ -12,6 +12,7 @@
     <description>所有需要渲染页面的服务工程</description>
     <modules>
         <module>changgou-web-search</module>
+        <module>changgou-web-item</module>
     </modules>
     <dependencies>
         <dependency>

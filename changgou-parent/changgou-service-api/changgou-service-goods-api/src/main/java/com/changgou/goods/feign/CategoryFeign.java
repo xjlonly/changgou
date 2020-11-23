@@ -83,4 +83,5 @@ public interface CategoryFeign {
      */
     @GetMapping
     Result<List<Category>> findAll();
+
 }

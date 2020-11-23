@@ -37,7 +37,7 @@ public interface SkuFeign {
     Result<PageInfo> findPage(@PathVariable  int page, @PathVariable  int size);
 
     /***
-     * 多条件搜索品牌数据
+     * 根据spuid查询sku集合
      * @param sku
      * @return
      */
