@@ -1,7 +1,42 @@
 server:
   port: 18087
 spring:
+  main:
+    allow-bean-definition-overriding: true
+  application:
+    name: mq-consumer
+  redis:
+    host: 139.199.117.109
+    port: 6379
+    password: 12345ok12345
   rabbitmq:
+    addresses: 139.199.117.109
+    connection-timeout: 15000
+    username: jtest
+    password: 123456
     port: 5672
-    addresses: 137.199.117.109
-    
+    publisher-confirms: true
+    virtual-host: test
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:7001/eureka
+  instance:
+    prefer-ip-address: true
+feign:
+  hystrix:
+    enabled: true
+ribbon:
+  ReadTimeout: 300000
+#hystrix 配置
+hystrix:
+  command:
+    default:
+      execution:
+        timeout:
+          #如果enabled设置为false，则请求超时交给ribbon控制
+          enabled: true
+        isolation:
+          thread:
+            timeoutInMilliseconds: 10000

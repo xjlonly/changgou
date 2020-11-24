@@ -25,8 +25,6 @@ import java.util.UUID;
 public class CanalDataEventListener {
 
     private   Logger logger = LoggerFactory.getLogger(getClass());
-    @Autowired
-    private ContentFeign contentFeign;
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
@@ -47,11 +45,11 @@ public class CanalDataEventListener {
      * 修改数据监听
      * @param rowData
      */
-    @UpdateListenPoint
-    public void onEventUpdate(CanalEntry.RowData rowData) {
-        logger.info("UpdateListenPoint");
-        rowData.getAfterColumnsList().forEach((c) -> logger.info("By--Annotation: " + c.getName() + " ::   " + c.getValue()));
-    }
+//    @UpdateListenPoint
+//    public void onEventUpdate(CanalEntry.RowData rowData) {
+//        logger.info("UpdateListenPoint");
+//        rowData.getAfterColumnsList().forEach((c) -> logger.info("By--Annotation: " + c.getName() + " ::   " + c.getValue()));
+//    }
 //
 //    /***
 //     * 删除数据监听
@@ -90,13 +88,13 @@ public class CanalDataEventListener {
     public void onEventCustomContent(CanalEntry.EventType eventType, CanalEntry.RowData rowData) {
         logger.info("广告数据有变更，更新缓存数据...");
         String categoryId = getColumnValue(eventType, rowData);
-        var result = contentFeign.findByCategory(Long.parseLong(categoryId));
-        var contents = result.getData();
-        stringRedisTemplate.boundValueOps("content_" + categoryId).set(JSON.toJSONString(contents));
+
 
         rabbitTemplate.setConfirmCallback(confirmCallback);
         CorrelationData correlationData = new CorrelationData(UUID.randomUUID().toString());
-        rabbitTemplate.convertAndSend(RabbitmqConfig.EXCHANGE_TOPICS_INFORM, "inform.content", categoryId,correlationData);
+        rabbitTemplate.convertAndSend(RabbitmqConfig.EXCHANGE_TOPICS_INFORM, "inform.content",
+                Long.parseLong(categoryId),
+                correlationData);
     }
 
     /*
@@ -155,7 +153,7 @@ public class CanalDataEventListener {
 
         rabbitTemplate.setConfirmCallback(confirmCallback);
         CorrelationData correlationData = new CorrelationData(UUID.randomUUID().toString());
-        rabbitTemplate.convertAndSend(RabbitmqConfig.EXCHANGE_TOPICS_INFORM,"inform.html", JSON.toJSONString(new SpuData(spuId, delete)),correlationData);
+        rabbitTemplate.convertAndSend(RabbitmqConfig.EXCHANGE_TOPICS_INFORM,"inform.html", new SpuData(spuId, delete),correlationData);
     }
 
     class SpuData {

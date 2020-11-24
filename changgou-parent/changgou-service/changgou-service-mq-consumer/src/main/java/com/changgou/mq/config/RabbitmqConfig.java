@@ -1,8 +1,6 @@
-package com.changgou.config;
+package com.changgou.mq.config;
 
 import org.springframework.amqp.core.*;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
-import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -47,8 +45,4 @@ public class RabbitmqConfig {
         return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY_HTML).noargs();
     }
 
-    @Bean
-    MessageConverter createMessageConverter() {
-        return new Jackson2JsonMessageConverter();
-    }
 }
