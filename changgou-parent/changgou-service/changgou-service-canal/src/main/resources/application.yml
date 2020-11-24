@@ -9,6 +9,15 @@ spring:
     host: 139.199.117.109
     port: 6379
     password: 12345ok12345
+  rabbitmq:
+    addresses: 139.199.117.109
+    connection-timeout: 15000
+    username: jtest
+    password: 123456
+    port: 5672
+    publisher-confirms: true
+    virtual-host: test
+
 eureka:
   client:
     service-url:
@@ -35,6 +44,7 @@ canal:
       example:
         host: 139.199.117.109
         port: 11111
+
 
 #canal:
 #  # instance 实例所在ip

@@ -1,0 +1,7 @@
+server:
+  port: 18087
+spring:
+  rabbitmq:
+    port: 5672
+    addresses: 137.199.117.109
+    
