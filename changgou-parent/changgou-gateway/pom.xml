@@ -10,7 +10,25 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
     <description>gateway 父工程</description>
+    <modules>
+        <module>changgou-gateway-web</module>
+    </modules>
     <artifactId>changgou-gateway</artifactId>
+    <!--网关依赖-->
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-gateway</artifactId>
+        </dependency>
 
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>
