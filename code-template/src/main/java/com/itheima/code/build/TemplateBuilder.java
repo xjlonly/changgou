@@ -133,7 +133,7 @@ public class TemplateBuilder {
                     swaggerModel.setType("object");
                     swaggerModel.setDescription(Table);
                     //属性集合
-                    List<SwaggerModelProperties> swaggerModelProperties = new ArrayList<SwaggerModelProperties>();
+                    List<com.itheima.code.swagger.SwaggerModelProperties> swaggerModelProperties = new ArrayList<SwaggerModelProperties>();
 
                     while (cloumnsSet.next()){
                         //列的描述

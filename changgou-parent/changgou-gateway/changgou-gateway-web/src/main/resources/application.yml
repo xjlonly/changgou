@@ -20,6 +20,17 @@ spring:
           filters:
 #            - PrefixPath=/brand
             - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@ipKeyResolver}"
+                #每秒钟允许请求的个数
+                redis-rate-limiter.replenishRate: 1
+                #允许并发有4个请求
+                redis-rate-limiter.burstCapacity: 1
+  redis:
+    port: 6379
+    host: 139.199.117.109
+    password: 12345ok12345
 server:
   port: 8001
 eureka:
