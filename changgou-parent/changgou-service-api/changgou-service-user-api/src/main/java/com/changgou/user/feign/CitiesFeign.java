@@ -1,12 +1,9 @@
-package com.changgou.content.feign;
-import entity.Result;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.RequestMapping;
+package com.changgou.user.feign;
+import com.changgou.user.pojo.Cities;
 import com.github.pagehelper.PageInfo;
 import entity.Result;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 /****
@@ -14,22 +11,22 @@ import java.util.List;
  * @Description:
  * @Date 2019/6/18 13:58
  *****/
-@FeignClient(name="${serviceName}")
-@RequestMapping("/${table}")
-public interface ${Table}Feign {
+@FeignClient(name="user")
+@RequestMapping("/cities")
+public interface CitiesFeign {
 
     /***
-     * ${Table}分页条件搜索实现
-     * @param ${table}
+     * Cities分页条件搜索实现
+     * @param cities
      * @param page
      * @param size
      * @return
      */
     @PostMapping(value = "/search/{page}/{size}" )
-    Result<PageInfo> findPage(@RequestBody(required = false) ${Table} ${table}, @PathVariable  int page, @PathVariable  int size);
+    Result<PageInfo> findPage(@RequestBody(required = false) Cities cities, @PathVariable  int page, @PathVariable  int size);
 
     /***
-     * ${Table}分页搜索实现
+     * Cities分页搜索实现
      * @param page:当前页
      * @param size:每页显示多少条
      * @return
@@ -39,11 +36,11 @@ public interface ${Table}Feign {
 
     /***
      * 多条件搜索品牌数据
-     * @param ${table}
+     * @param cities
      * @return
      */
     @PostMapping(value = "/search" )
-    Result<List<${Table}>> findList(@RequestBody(required = false) ${Table} ${table});
+    Result<List<Cities>> findList(@RequestBody(required = false) Cities cities);
 
     /***
      * 根据ID删除品牌数据
@@ -51,37 +48,37 @@ public interface ${Table}Feign {
      * @return
      */
     @DeleteMapping(value = "/{id}" )
-    Result delete(@PathVariable ${keyType} id);
+    Result delete(@PathVariable String id);
 
     /***
-     * 修改${Table}数据
-     * @param ${table}
+     * 修改Cities数据
+     * @param cities
      * @param id
      * @return
      */
     @PutMapping(value="/{id}")
-    Result update(@RequestBody ${Table} ${table},@PathVariable ${keyType} id);
+    Result update(@RequestBody Cities cities,@PathVariable String id);
 
     /***
-     * 新增${Table}数据
-     * @param ${table}
+     * 新增Cities数据
+     * @param cities
      * @return
      */
     @PostMapping
-    Result add(@RequestBody ${Table} ${table});
+    Result add(@RequestBody Cities cities);
 
     /***
-     * 根据ID查询${Table}数据
+     * 根据ID查询Cities数据
      * @param id
      * @return
      */
     @GetMapping("/{id}")
-    Result<${Table}> findById(@PathVariable ${keyType} id);
+    Result<Cities> findById(@PathVariable String id);
 
     /***
-     * 查询${Table}全部数据
+     * 查询Cities全部数据
      * @return
      */
     @GetMapping
-    Result<List<${Table}>> findAll();
+    Result<List<Cities>> findAll();
 }

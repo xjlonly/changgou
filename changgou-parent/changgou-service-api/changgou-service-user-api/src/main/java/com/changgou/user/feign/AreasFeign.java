@@ -1,7 +1,5 @@
-package com.changgou.content.feign;
-import entity.Result;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.RequestMapping;
+package com.changgou.user.feign;
+import com.changgou.user.pojo.Areas;
 import com.github.pagehelper.PageInfo;
 import entity.Result;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -14,22 +12,22 @@ import java.util.List;
  * @Description:
  * @Date 2019/6/18 13:58
  *****/
-@FeignClient(name="${serviceName}")
-@RequestMapping("/${table}")
-public interface ${Table}Feign {
+@FeignClient(name="user")
+@RequestMapping("/areas")
+public interface AreasFeign {
 
     /***
-     * ${Table}分页条件搜索实现
-     * @param ${table}
+     * Areas分页条件搜索实现
+     * @param areas
      * @param page
      * @param size
      * @return
      */
     @PostMapping(value = "/search/{page}/{size}" )
-    Result<PageInfo> findPage(@RequestBody(required = false) ${Table} ${table}, @PathVariable  int page, @PathVariable  int size);
+    Result<PageInfo> findPage(@RequestBody(required = false) Areas areas, @PathVariable int page, @PathVariable  int size);
 
     /***
-     * ${Table}分页搜索实现
+     * Areas分页搜索实现
      * @param page:当前页
      * @param size:每页显示多少条
      * @return
@@ -39,11 +37,11 @@ public interface ${Table}Feign {
 
     /***
      * 多条件搜索品牌数据
-     * @param ${table}
+     * @param areas
      * @return
      */
     @PostMapping(value = "/search" )
-    Result<List<${Table}>> findList(@RequestBody(required = false) ${Table} ${table});
+    Result<List<Areas>> findList(@RequestBody(required = false) Areas areas);
 
     /***
      * 根据ID删除品牌数据
@@ -51,37 +49,37 @@ public interface ${Table}Feign {
      * @return
      */
     @DeleteMapping(value = "/{id}" )
-    Result delete(@PathVariable ${keyType} id);
+    Result delete(@PathVariable String id);
 
     /***
-     * 修改${Table}数据
-     * @param ${table}
+     * 修改Areas数据
+     * @param areas
      * @param id
      * @return
      */
     @PutMapping(value="/{id}")
-    Result update(@RequestBody ${Table} ${table},@PathVariable ${keyType} id);
+    Result update(@RequestBody Areas areas,@PathVariable String id);
 
     /***
-     * 新增${Table}数据
-     * @param ${table}
+     * 新增Areas数据
+     * @param areas
      * @return
      */
     @PostMapping
-    Result add(@RequestBody ${Table} ${table});
+    Result add(@RequestBody Areas areas);
 
     /***
-     * 根据ID查询${Table}数据
+     * 根据ID查询Areas数据
      * @param id
      * @return
      */
     @GetMapping("/{id}")
-    Result<${Table}> findById(@PathVariable ${keyType} id);
+    Result<Areas> findById(@PathVariable String id);
 
     /***
-     * 查询${Table}全部数据
+     * 查询Areas全部数据
      * @return
      */
     @GetMapping
-    Result<List<${Table}>> findAll();
+    Result<List<Areas>> findAll();
 }

@@ -16,10 +16,10 @@ spring:
         - id: changgou_goods_route
           uri: lb://goods
           predicates:
-            - Path=/api/brand/**
+            - Path=/api/goods/**,
           filters:
 #            - PrefixPath=/brand
-            - StripPrefix=1
+            - StripPrefix=2
             - name: RequestRateLimiter
               args:
                 key-resolver: "#{@ipKeyResolver}"
@@ -27,6 +27,12 @@ spring:
                 redis-rate-limiter.replenishRate: 1
                 #允许并发有4个请求
                 redis-rate-limiter.burstCapacity: 1
+        - id: changgou_user_route
+          uri: lb://user
+          predicates:
+            - Path=/api/user/**,/api/address/**,/api/areas/**,/api/cities/**,/api/provinces/**,
+          filters:
+            - StripPrefix=1
   redis:
     port: 6379
     host: 139.199.117.109
