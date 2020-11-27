@@ -65,6 +65,13 @@ public class UserLoginController {
         return new Result<>(true, StatusCode.OK,"令牌生成成功",authToken);
     }
 
+    /**
+     * @author: xjlonly
+     * @description: TODO
+     * @date: 2020/11/27 16:52
+     * @Param: null
+     * @return 
+     */
     private void saveCookie(String token){
         HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getResponse();
         CookieUtil.addCookie(response,cookieDomain,"/","Authorization",token,cookieMaxAge,false);

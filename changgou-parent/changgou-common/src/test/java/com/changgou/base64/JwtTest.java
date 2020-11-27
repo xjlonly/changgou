@@ -45,7 +45,7 @@ public class JwtTest {
 
     @Test
     public void verify() {
-        String token = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIxMjMzNCIsInN1YiI6InNpbiBkaW5kZGRkIiwiaWF0IjoxNjA2MzY5OTYzLCJleHAiOjE2MDYzNjk5NjUsInBhc3N3b3JkIjoiMzM0ZGRnc2QiLCJhZGRyZXNzIjoiYmVpamluZ3NoaSIsIm5hbWUiOiJ4amxvbmx5In0.uiEA73zr0TQcNPeFmJfRaaxJZmoBk7FDwKFmMMMDUvg";
+        String token = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIxMjMzNCIsInN1YiI6InNpbiBkaW5kZGRkIiwiaWF0IjoxNjA2NDYzNDQyLCJleHAiOjE2MDY0NjM0NDQsInBhc3N3b3JkIjoiMzM0ZGRnc2QiLCJhZGRyZXNzIjoiYmVpamluZ3NoaSIsIm5hbWUiOiJ4amxvbmx5In0.gBPzvgWS_utpyYd_jVj0fS0zgN0HENxcwNkeOXt5D0U";
         SecretKey secretKey = getSecretKey();
         Jws<Claims> jws = Jwts.parserBuilder()
                 // 解析 JWT 的服务器与创建 JWT 的服务器的时钟不一定完全同步，此设置允许两台服务器最多有 3 分钟的时差

@@ -53,7 +53,7 @@ public class CreateJwtTest {
         tokenMap.put("name", "itheima");
         tokenMap.put("roles", "ROLE_VIP,ROLE_USER");
 
-        //生成Jwt令牌
+        //生成Jwt令牌 私钥作为盐加密获取jwt令牌
         Jwt jwt = JwtHelper.encode(JSON.toJSONString(tokenMap), new RsaSigner(rsaPrivate));
 
 
