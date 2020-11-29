@@ -1,12 +1,12 @@
-package com.changgou.content.feign;
-import entity.Result;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.RequestMapping;
+package com.changgou.order.feign;
+
+import com.changgou.order.pojo.CategoryReport;
 import com.github.pagehelper.PageInfo;
 import entity.Result;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 /****

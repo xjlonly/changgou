@@ -7,6 +7,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /****
  * @Author:shenkunlin
@@ -16,6 +17,9 @@ import java.util.List;
 @FeignClient(name="goods")
 @RequestMapping("/sku")
 public interface SkuFeign {
+
+    @RequestMapping("/decr/count")
+    Result decrCount(@RequestParam Map<Long, Integer> decrmap);
 
     /***
      * Sku分页条件搜索实现

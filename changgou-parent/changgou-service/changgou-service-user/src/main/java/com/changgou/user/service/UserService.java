@@ -13,6 +13,14 @@ import java.util.List;
 public interface UserService {
 
     /***
+     * 添加用户积分
+     * @param username
+     * @param pint
+     * @return
+     */
+    int addUserPoints(String username,Integer pint);
+
+    /***
      * User多条件分页查询
      * @param user
      * @param page

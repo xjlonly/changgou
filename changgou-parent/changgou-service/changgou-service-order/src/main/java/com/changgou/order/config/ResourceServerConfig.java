@@ -1,4 +1,4 @@
-package com.changgou.user.config;
+package com.changgou.order.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -70,12 +70,6 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
     public void configure(HttpSecurity http) throws Exception {
         //所有请求必须认证通过
         http.authorizeRequests()
-                //下边的路径放行
-                .antMatchers(
-                        "/user/add"
-                        //,"/user/load/*"
-                )//配置地址放行
-                .permitAll()
                 .anyRequest().
                 authenticated();    //其他地址需要认证授权
     }

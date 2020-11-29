@@ -1,7 +1,10 @@
 package com.changgou.order.service;
+
 import com.changgou.order.pojo.Order;
 import com.github.pagehelper.PageInfo;
+
 import java.util.List;
+
 /****
  * @Author:shenkunlin
  * @Description:Order业务层接口
@@ -49,7 +52,7 @@ public interface OrderService {
      * 新增Order
      * @param order
      */
-    void add(Order order);
+    int add(Order order);
 
     /**
      * 根据ID查询Order

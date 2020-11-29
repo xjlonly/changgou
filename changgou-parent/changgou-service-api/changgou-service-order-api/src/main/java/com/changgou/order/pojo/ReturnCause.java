@@ -1,10 +1,11 @@
 package com.changgou.order.pojo;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+
 import javax.persistence.*;
 import java.io.Serializable;
-import java.lang.String;
-import java.lang.Integer;
+
 /****
  * @Author:shenkunlin
  * @Description:ReturnCause构建

@@ -1,4 +1,5 @@
 package com.changgou.order.service.impl;
+
 import com.changgou.order.dao.PreferentialMapper;
 import com.changgou.order.pojo.Preferential;
 import com.changgou.order.service.PreferentialService;
@@ -8,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import tk.mybatis.mapper.entity.Example;
+
 import java.util.List;
+
 /****
  * @Author:shenkunlin
  * @Description:Preferential业务层接口实现类

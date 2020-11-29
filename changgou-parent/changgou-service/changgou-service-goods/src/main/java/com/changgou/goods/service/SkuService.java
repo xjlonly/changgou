@@ -4,6 +4,7 @@ import com.changgou.goods.pojo.Sku;
 import com.github.pagehelper.PageInfo;
 
 import java.util.List;
+import java.util.Map;
 
 /****
  * @Author:shenkunlin
@@ -13,7 +14,8 @@ import java.util.List;
 public interface SkuService {
 
 
-    boolean deductionNum(Long id, Integer num);
+
+    boolean deductionNum(Map<Long,Integer> decrMap);
 
     /***
      * Sku多条件分页查询

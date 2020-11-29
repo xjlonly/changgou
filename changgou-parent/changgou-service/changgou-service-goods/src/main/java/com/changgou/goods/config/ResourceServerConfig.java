@@ -1,4 +1,4 @@
-package com.changgou.user.config;
+package com.changgou.goods.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -72,7 +72,7 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
         http.authorizeRequests()
                 //下边的路径放行
                 .antMatchers(
-                        "/user/add"
+                        "/spec/**"
                         //,"/user/load/*"
                 )//配置地址放行
                 .permitAll()

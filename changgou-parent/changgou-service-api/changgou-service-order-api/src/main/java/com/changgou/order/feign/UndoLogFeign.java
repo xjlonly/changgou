@@ -1,7 +1,6 @@
-package com.changgou.content.feign;
-import entity.Result;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.RequestMapping;
+package com.changgou.order.feign;
+
+import com.changgou.order.pojo.UndoLog;
 import com.github.pagehelper.PageInfo;
 import entity.Result;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -15,7 +14,7 @@ import java.util.List;
  * @Date 2019/6/18 13:58
  *****/
 @FeignClient(name="order")
-@RequestMapping("/undoLog")
+@RequestMapping("/order/undoLog")
 public interface UndoLogFeign {
 
     /***

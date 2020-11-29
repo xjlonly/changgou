@@ -1,4 +1,5 @@
 package com.changgou.order.service.impl;
+
 import com.changgou.order.dao.CategoryReportMapper;
 import com.changgou.order.pojo.CategoryReport;
 import com.changgou.order.service.CategoryReportService;
@@ -8,7 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import tk.mybatis.mapper.entity.Example;
+
+import java.util.Date;
 import java.util.List;
+
 /****
  * @Author:shenkunlin
  * @Description:CategoryReport业务层接口实现类
@@ -64,6 +68,8 @@ public class CategoryReportServiceImpl implements CategoryReportService {
         //根据构建的条件查询数据
         return categoryReportMapper.selectByExample(example);
     }
+
+
 
 
     /**

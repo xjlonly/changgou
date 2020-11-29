@@ -19,7 +19,15 @@ eureka:
 feign:
   hystrix:
     enabled: true
-
+#hystrix 配置
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 10000
+          strategy: SEMAPHORE
 mybatis:
   configuration:
     map-underscore-to-camel-case: true

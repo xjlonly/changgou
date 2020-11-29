@@ -12,6 +12,7 @@ import org.springframework.util.StringUtils;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
+import java.util.Map;
 
 /****
  * @Author:shenkunlin
@@ -28,15 +29,16 @@ public class SkuServiceImpl implements SkuService {
     * 扣减库存
     * */
     @Transactional
-    public boolean deductionNum(Long id, Integer num){
-        var sku =  skuMapper.selectByPrimaryKey(id);
-        if(sku.getNum() < num){
-            throw new RuntimeException("库存不足！");
-        }else{
-            sku.setNum( sku.getNum() - num);
-            sku.setSaleNum(sku.getSaleNum() + num);
+    public boolean deductionNum(Map<Long,Integer> decrMap){
+        for(Map.Entry<Long,Integer> entry : decrMap.entrySet()){
+            Long id = entry.getKey();
+            int num = Integer.parseInt(entry.getValue().toString());
+            int count = skuMapper.decrCount(num, id);
+            if(count <= 0){
+                throw new RuntimeException("库存扣减失败,需回滚事务");
+            }
         }
-        return  skuMapper.updateByPrimaryKeySelective(sku) > 0;
+        return true;
     }
 
 

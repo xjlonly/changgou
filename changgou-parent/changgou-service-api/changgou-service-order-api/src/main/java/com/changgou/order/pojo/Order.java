@@ -1,11 +1,15 @@
 package com.changgou.order.pojo;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import javax.persistence.*;
+
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
-import java.lang.String;
-import java.lang.Integer;
+import java.util.List;
+
 /****
  * @Author:shenkunlin
  * @Description:Order构建
@@ -124,7 +128,8 @@ public class Order implements Serializable{
     @Column(name = "is_delete")
 	private String isDelete;//是否删除
 
-
+	@ApiModelProperty(value = "所选商品ID",required = false)
+	private List<Long> skuIds;
 
 	//get方法
 	public String getId() {
@@ -370,5 +375,11 @@ public class Order implements Serializable{
 		this.isDelete = isDelete;
 	}
 
+	public List<Long> getSkuIds() {
+		return skuIds;
+	}
 
+	public void setSkuIds(List<Long> skuIds) {
+		this.skuIds = skuIds;
+	}
 }

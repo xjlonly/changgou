@@ -5,11 +5,13 @@ import com.changgou.user.service.AddressService;
 import com.github.pagehelper.PageInfo;
 import entity.Result;
 import entity.StatusCode;
+import entity.TokenDecode;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /****
  * @Author:shenkunlin
@@ -24,6 +26,22 @@ public class AddressController {
 
     @Autowired
     private AddressService addressService;
+
+    @Autowired
+    private TokenDecode tokenDecode;
+
+    /****
+     * 用户收件地址
+     */
+    @GetMapping(value = "/user/list")
+    public Result<List<Address>> list(){
+        //获取用户登录信息
+        Map<String, String> userMap = tokenDecode.getUserInfo();
+        String username = userMap.get("username");
+        //查询用户收件地址
+        List<Address> addressList = addressService.list(username);
+        return new Result(true, StatusCode.OK,"查询成功！",addressList);
+    }
 
     /***
      * Address分页条件搜索实现
