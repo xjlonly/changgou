@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /****
  * @Author:shenkunlin
@@ -24,6 +25,15 @@ public class SkuController {
 
     @Autowired
     private SkuService skuService;
+
+    /**
+     * 扣减库存
+     * */
+    @RequestMapping("/decr/count")
+    public Result decrCount(@RequestParam Map<Long, Integer> decrmap){
+         skuService.deductionNum(decrmap);
+         return new Result(true,StatusCode.OK,"库存扣减失败");
+    }
 
     /***
      * Sku分页条件搜索实现

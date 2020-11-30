@@ -11,7 +11,9 @@ import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /****
  * @Author:shenkunlin
@@ -114,7 +116,9 @@ public class SpuController {
     @PostMapping("/goods/deduction")
     public Result<Goods> deductionNum(@RequestBody Long id, @RequestBody int num){
         //根据ID查询Goods(SPU+SKU)信息
-        var rel = skuService.deductionNum(id, num);
+        Map<Long, Integer> map = new HashMap<Long,Integer>();
+        map.put(id, num);
+        var rel = skuService.deductionNum(map);
         return new Result<Goods>(rel, rel ?  StatusCode.OK : StatusCode.ERROR,"查询成功");
     }
 

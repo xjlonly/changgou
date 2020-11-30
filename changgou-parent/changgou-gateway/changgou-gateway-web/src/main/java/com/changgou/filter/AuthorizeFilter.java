@@ -28,12 +28,17 @@ public class AuthorizeFilter implements GlobalFilter, Ordered {
         //获取请求的URI
         String path = request.getURI().getPath();
 
-        //如果是登录、goods等开放的微服务[这里的goods部分开放],则直接放行
-        if (path.startsWith("/api/user/login") || path.startsWith("/api/goods/brand/search")) {
+        if(URLFilter.hasAuthorize(path)){
             //放行
             Mono<Void> filter = chain.filter(exchange);
             return filter;
         }
+//        //如果是登录、goods等开放的微服务[这里的goods部分开放],则直接放行
+//        if (path.startsWith("/api/user/login") || path.startsWith("/api/goods/brand/search")) {
+//            //放行
+//            Mono<Void> filter = chain.filter(exchange);
+//            return filter;
+//        }
         boolean hasToken = true;
         String token = request.getHeaders().getFirst(AUTHORIZE_TOKEN);
 
@@ -52,15 +57,26 @@ public class AuthorizeFilter implements GlobalFilter, Ordered {
             response.setStatusCode(HttpStatus.UNAUTHORIZED);
             return response.setComplete();
         }
-        try {
-            JwtUtil.parseJWT(token);
-        } catch (Exception e) {
-            e.printStackTrace();
+//        try {
+//            JwtUtil.parseJWT(token);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            response.setStatusCode(HttpStatus.UNAUTHORIZED);
+//            return response.setComplete();
+//        }
+
+        if(StringUtils.isEmpty(token)){
             response.setStatusCode(HttpStatus.UNAUTHORIZED);
             return response.setComplete();
         }
-        //将令牌封装到请求头中 Auth2.0使用
-        request.mutate().header(AUTHORIZE_TOKEN, token);
+
+        if(!hasToken){
+
+            if(!token.startsWith("bearer") && !token.startsWith("Bearer ")) token = "bearer " + token;
+            //将令牌封装到请求头中 Auth2.0使用
+            request.mutate().header(AUTHORIZE_TOKEN, token);
+        }
+
         return chain.filter(exchange);
     }
 

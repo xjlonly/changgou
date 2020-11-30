@@ -18,7 +18,7 @@ import java.util.List;
  *****/
 @Api(value = "UndoLogController")
 @RestController
-@RequestMapping("/undoLog")
+@RequestMapping("/goods/undoLog")
 @CrossOrigin
 public class UndoLogController {
 

@@ -44,7 +44,7 @@ public class AuthController {
     @Autowired
     AuthService authService;
 
-    @PostMapping("/login")
+    @RequestMapping("/login")
     public Result login(String username, String password) {
         if(StringUtils.isEmpty(username)){
             throw new RuntimeException("用户名不允许为空");
@@ -60,7 +60,7 @@ public class AuthController {
         //将令牌存储到cookie
         saveCookie(access_token);
 
-        return new Result(true, StatusCode.OK,"登录成功！");
+        return new Result(true, StatusCode.OK,"登录成功！",authToken);
     }
 
     /***
