@@ -54,13 +54,15 @@ public class AuthController {
         }
         //申请令牌
         AuthToken authToken =  authService.login(username,password,clientId,clientSecret);
+        if(authToken != null){
+            //用户身份令牌
+            String access_token = authToken.getAccessToken();
+            //将令牌存储到cookie
+            saveCookie(access_token);
 
-        //用户身份令牌
-        String access_token = authToken.getAccessToken();
-        //将令牌存储到cookie
-        saveCookie(access_token);
-
-        return new Result(true, StatusCode.OK,"登录成功！",authToken);
+            return new Result(true, StatusCode.OK,"登录成功！",authToken);
+        }
+        return new Result(false, StatusCode.ERROR,"获取令牌失败，用户或密码错误！");
     }
 
     /***

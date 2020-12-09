@@ -8,6 +8,7 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Service;
@@ -46,11 +47,13 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthToken login(String username, String password, String clientId, String clientSecret) {
         //申请令牌
-        AuthToken authToken = applyToken(username,password,clientId, clientSecret);
-        if(authToken == null){
-            throw new RuntimeException("申请令牌失败");
+        try {
+            AuthToken authToken = applyToken(username,password,clientId, clientSecret);
+            return authToken;
+        }catch (RuntimeException e){
+            e.printStackTrace();
+            return  null;
         }
-        return authToken;
     }
 
 
@@ -62,7 +65,7 @@ public class AuthServiceImpl implements AuthService {
      * @param clientSecret：配置文件中的秘钥
      * @return
      */
-    private AuthToken applyToken(String username, String password, String clientId, String clientSecret) {
+    private AuthToken applyToken(String username, String password, String clientId, String clientSecret) throws RuntimeException{
         //选中认证服务的地址
         ServiceInstance serviceInstance = loadBalancerClient.choose("user-auth");
         if (serviceInstance == null) {
@@ -86,7 +89,7 @@ public class AuthServiceImpl implements AuthService {
             @Override
             public void handleError(ClientHttpResponse response) throws IOException {
                 //当响应的值为400或401时候也要正常响应，不要抛出异常
-                if (response.getRawStatusCode() != 400 && response.getRawStatusCode() != 401) {
+                if (response.getRawStatusCode() == 400 && response.getRawStatusCode() == 401) {
                     super.handleError(response);
                 }
             }
@@ -101,8 +104,10 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException(e);
         }
         if(map == null || map.get("access_token") == null || map.get("refresh_token") == null || map.get("jti") == null) {
+
             //jti是jwt令牌的唯一标识作为用户身份令牌
-            throw new RuntimeException("创建令牌失败！");
+            assert map != null;
+            throw new RuntimeException("创建令牌失败！error: + "+ map.get("error")+",error_description:{}" + map.get("error_description"));
         }
 
         //将响应数据封装成AuthToken对象

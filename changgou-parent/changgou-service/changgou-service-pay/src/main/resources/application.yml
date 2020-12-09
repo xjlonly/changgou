@@ -1,23 +1,10 @@
 server:
-  port: 18087
+  port: 18091
 spring:
+  application:
+    name: pay
   main:
     allow-bean-definition-overriding: true
-  application:
-    name: mq-consumer
-  redis:
-    host: 139.199.117.109
-    port: 6379
-    password: 12345ok12345
-  rabbitmq:
-    addresses: 139.199.117.109
-    connection-timeout: 15000
-    username: jtest
-    password: 123456
-    port: 5672
-    publisher-confirms: true
-    virtual-host: test
-
 eureka:
   client:
     service-url:
@@ -27,8 +14,6 @@ eureka:
 feign:
   hystrix:
     enabled: true
-ribbon:
-  ReadTimeout: 300000
 #hystrix 配置
 hystrix:
   command:
@@ -38,10 +23,15 @@ hystrix:
           #如果enabled设置为false，则请求超时交给ribbon控制
           enabled: true
         isolation:
-          thread:
-            timeoutInMilliseconds: 10000
+          strategy: SEMAPHORE
 
-
+#微信支付信息配置
+weixin:
+  appid: wx8397f8696b538317
+  partner: 1473426802
+  partnerkey: T6m9iK73b0kn9g5v426MKfHQH7X8rKwb
+  notifyurl: http://www.itcast.cn
+#位置支付交换机和队列
 mq:
   pay:
     exchange:

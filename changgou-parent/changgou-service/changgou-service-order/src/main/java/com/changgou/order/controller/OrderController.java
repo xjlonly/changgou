@@ -7,6 +7,7 @@ import entity.Result;
 import entity.StatusCode;
 import entity.TokenDecode;
 import io.swagger.annotations.*;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -117,12 +118,12 @@ public class OrderController {
      */
     @ApiOperation(value = "Order添加",notes = "添加Order方法详情",tags = {"OrderController"})
     @PostMapping
-    public Result add(@RequestBody  @ApiParam(name = "Order对象",value = "传入JSON数据",required = true) Order order){
+    public Result<Order> add(@RequestBody  @ApiParam(name = "Order对象",value = "传入JSON数据",required = true) Order order){
         //调用OrderService实现添加Order
         String username = tokenDecode.getUserInfo().get("username");
         order.setUsername(username);
-        orderService.add(order);
-        return new Result(true,StatusCode.OK,"添加成功");
+        var result =  orderService.add(order);
+        return new Result<Order>(true,StatusCode.OK,"添加成功",result);
     }
 
     /***

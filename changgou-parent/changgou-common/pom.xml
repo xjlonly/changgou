@@ -48,14 +48,13 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
         </dependency>
-
         <!--oauth依赖-->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-oauth2</artifactId>
+            <!--编译和测试时使用-->
             <scope>provided</scope>
         </dependency>
-
         <!--鉴权-->
 
     </dependencies>

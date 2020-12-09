@@ -71,7 +71,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         var result = userFeign.findById(username);
         if(result == null || result.getData() == null){
-            return  null;
+            return  new UserJwt(username,"",AuthorityUtils.commaSeparatedStringToAuthorityList(""));
         }
         com.changgou.user.pojo.User user = result.getData();
         String pwd = user.getPassword();

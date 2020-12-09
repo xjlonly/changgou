@@ -240,7 +240,7 @@ public class OrderServiceImpl implements OrderService {
      * @param order
      */
     @Override
-    public int add(Order order){
+    public Order add(Order order){
         List<OrderItem> orderItems = cartService.list(order.getUsername());
 
         order.setId(String.valueOf(idWorker.nextId()));
@@ -274,6 +274,7 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderStatus("0");      //0:未完成,1:已完成，2：已退货
         order.setPayStatus("0");        //0:未支付，1：已支付，2：支付失败
         order.setConsignStatus("0");    //0:未发货，1：已发货，2：已收货
+        order.setPayType("1");
 
         int count = orderMapper.insertSelective(order);
 
@@ -290,8 +291,11 @@ public class OrderServiceImpl implements OrderService {
         }
         //增加积分
         userFeign.addPoints(10);
-
-        return count;
+        //将订单数据存入redis
+        if(order.getPayType().equals("1")){
+            redisTemplate.boundHashOps("Order").put(order.getId(),order);
+        }
+        return order;
     }
 
     /**
@@ -311,5 +315,44 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<Order> findAll() {
         return orderMapper.selectAll();
+    }
+
+
+    /***
+     * 订单修改
+     * @param orderId
+     * @param transactionid  微信支付的交易流水号
+     */
+    @Override
+    public void updateStatus(String orderId,String transactionid) {
+        //1.修改订单
+        Order order = orderMapper.selectByPrimaryKey(orderId);
+        order.setUpdateTime(new Date());    //时间也可以从微信接口返回过来，这里为了方便，我们就直接使用当前时间了
+        order.setPayTime(order.getUpdateTime());    //不允许这么写
+        order.setTransactionId(transactionid);  //交易流水号
+        order.setPayStatus("1");    //已支付
+        orderMapper.updateByPrimaryKeySelective(order);
+
+        //2.删除Redis中的订单记录
+        redisTemplate.boundHashOps("Order").delete(orderId);
+    }
+
+
+    /***
+     * 订单的删除操作
+     */
+    @Override
+    public void deleteOrder(String id) {
+        //改状态
+        Order order = (Order) redisTemplate.boundHashOps("Order").get(id);
+        if(order == null){
+            return;
+        }
+        order.setUpdateTime(new Date());
+        order.setPayStatus("2");    //支付失败
+        orderMapper.updateByPrimaryKeySelective(order);
+
+        //删除缓存
+        redisTemplate.boundHashOps("Order").delete(id);
     }
 }
