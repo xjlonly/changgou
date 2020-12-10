@@ -39,7 +39,7 @@ public class WeixinPayServiceImpl implements WeixinPayService {
             param.put("appid", appid);                              //应用ID
             param.put("mch_id", partner);                           //商户ID号
             param.put("nonce_str", WXPayUtil.generateNonceStr());   //随机数
-            param.put("body", "畅购");                            	//订单描述
+            param.put("body", "在线订单-飞天茅台");                            	//订单描述
             param.put("out_trade_no",out_trade_no);                 //商户订单号
             param.put("total_fee", total_fee);                      //交易金额
             param.put("spbill_create_ip", "127.0.0.1");           //终端IP

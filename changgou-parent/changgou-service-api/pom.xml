@@ -16,6 +16,7 @@
         <module>changgou-web-item-api</module>
         <module>changgou-service-user-api</module>
         <module>changgou-service-order-api</module>
+        <module>changgou-service-pay-api</module>
     </modules>
     <modelVersion>4.0.0</modelVersion>
 

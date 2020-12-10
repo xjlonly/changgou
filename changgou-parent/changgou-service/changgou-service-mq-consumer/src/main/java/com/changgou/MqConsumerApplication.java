@@ -9,7 +9,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
 @EnableEurekaClient
-@EnableFeignClients(basePackages = {"com.changgou.content.feign","com.changgou.item.feign"})
+@EnableFeignClients(basePackages = {"com.changgou.content.feign","com.changgou.item.feign","com.changgou.order.feign"})
 public class MqConsumerApplication {
     public static void main(String[] args){
         SpringApplication.run(MqConsumerApplication.class, args);

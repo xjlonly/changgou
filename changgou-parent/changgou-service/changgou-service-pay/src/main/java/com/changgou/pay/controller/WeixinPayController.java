@@ -65,14 +65,19 @@ public class WeixinPayController {
      * @return
      */
     @GetMapping(value = "/status/query")
-    public Result queryStatus(String outtradeno){
+    public Result<Map<String,String>> queryStatus(String outtradeno){
         Map<String,String> resultMap = weixinPayService.queryPayStatus(outtradeno);
+
+        //测试使用 消息写入队列
+        //将消息发送给RabbitMQ
+        rabbitTemplate.convertAndSend(exchange,routing, JSON.toJSONString(resultMap));
+
         return new Result(true,StatusCode.OK,"查询状态成功！",resultMap);
     }
 
 
     /***
-     * 支付回调
+     * 支付回调 消息写入队列
      * @param request
      * @return
      */

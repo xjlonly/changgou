@@ -1,6 +1,7 @@
 package com.changgou.order.service.impl;
 
 import com.changgou.goods.feign.SkuFeign;
+import com.changgou.order.config.QueueConfig;
 import com.changgou.order.dao.OrderItemMapper;
 import com.changgou.order.dao.OrderMapper;
 import com.changgou.order.pojo.Order;
@@ -11,12 +12,20 @@ import com.changgou.user.feign.UserFeign;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import entity.IdWorker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessagePostProcessor;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import tk.mybatis.mapper.entity.Example;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +38,8 @@ import java.util.Map;
  *****/
 @Service
 public class OrderServiceImpl implements OrderService {
+
+    private Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
 
     @Autowired
     private OrderMapper orderMapper;
@@ -50,6 +61,10 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private UserFeign userFeign;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
     /**
      * Order条件+分页查询
      * @param order 查询条件
@@ -248,14 +263,14 @@ public class OrderServiceImpl implements OrderService {
         int totalNum = 0;
         int payMoney = 0;
 
-        Map<Long, Integer> decrmap = new HashMap<Long,Integer>();
+        Map<String, Integer> decrmap = new HashMap<String, Integer>();
 
         for(OrderItem item : orderItems){
             if(order.getSkuIds().stream().anyMatch(x->x.equals(item.getSkuId()))){
                 totalMoney += item.getMoney();
                 totalNum+= item.getNum();
                 payMoney += item.getPayMoney();
-                decrmap.put(item.getSkuId(),item.getNum());
+                decrmap.put(item.getSkuId().toString(),item.getNum());
             }
         }
         order.setTotalMoney(totalMoney);
@@ -295,6 +310,16 @@ public class OrderServiceImpl implements OrderService {
         if(order.getPayType().equals("1")){
             redisTemplate.boundHashOps("Order").put(order.getId(),order);
         }
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        logger.info("当前时间：{}", simpleDateFormat.format(new Date()));
+        rabbitTemplate.convertAndSend(QueueConfig.QUEUE_ORDER_DELAY, (Object) order.getId(), new MessagePostProcessor() {
+            @Override
+            public Message postProcessMessage(Message message) throws AmqpException {
+                message.getMessageProperties().setExpiration("100000");
+                return message;
+            }
+        });
+
         return order;
     }
 
@@ -327,6 +352,10 @@ public class OrderServiceImpl implements OrderService {
     public void updateStatus(String orderId,String transactionid) {
         //1.修改订单
         Order order = orderMapper.selectByPrimaryKey(orderId);
+        if(order == null){
+            logger.error("未查询到订单信息：{}",orderId);
+            return;
+        }
         order.setUpdateTime(new Date());    //时间也可以从微信接口返回过来，这里为了方便，我们就直接使用当前时间了
         order.setPayTime(order.getUpdateTime());    //不允许这么写
         order.setTransactionId(transactionid);  //交易流水号

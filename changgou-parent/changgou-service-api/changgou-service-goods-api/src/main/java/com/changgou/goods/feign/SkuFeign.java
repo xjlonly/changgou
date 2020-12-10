@@ -19,7 +19,7 @@ import java.util.Map;
 public interface SkuFeign {
 
     @RequestMapping("/decr/count")
-    Result decrCount(@RequestParam Map<Long, Integer> decrmap);
+    Result decrCount(@RequestParam Map<String, Integer> decrmap);
 
     /***
      * Sku分页条件搜索实现

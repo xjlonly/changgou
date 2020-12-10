@@ -29,9 +29,9 @@ public class SkuServiceImpl implements SkuService {
     * 扣减库存
     * */
     @Transactional
-    public boolean deductionNum(Map<Long,Integer> decrMap){
-        for(Map.Entry<Long,Integer> entry : decrMap.entrySet()){
-            Long id = entry.getKey();
+    public boolean deductionNum(Map<String,Integer> decrMap){
+        for(Map.Entry<String,Integer> entry : decrMap.entrySet()){
+            long id = Long.parseLong(entry.getKey());
             int num = Integer.parseInt(entry.getValue().toString());
             int count = skuMapper.decrCount(num, id);
             if(count <= 0){

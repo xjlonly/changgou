@@ -17,6 +17,10 @@ import java.util.List;
 @RequestMapping("/order")
 public interface OrderFeign {
 
+
+    @PostMapping(value = "/update/status")
+    Result updateStatus(@RequestParam(name = "orderid") String orderid,@RequestParam(name = "transactionid") String transactionid);
+
     /***
      * Order分页条件搜索实现
      * @param order

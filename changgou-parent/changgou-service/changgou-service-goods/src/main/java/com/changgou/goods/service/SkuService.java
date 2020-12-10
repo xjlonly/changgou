@@ -15,7 +15,7 @@ public interface SkuService {
 
 
 
-    boolean deductionNum(Map<Long,Integer> decrMap);
+    boolean deductionNum(Map<String,Integer> decrMap);
 
     /***
      * Sku多条件分页查询

@@ -30,7 +30,7 @@ public class SkuController {
      * 扣减库存
      * */
     @RequestMapping("/decr/count")
-    public Result decrCount(@RequestParam Map<Long, Integer> decrmap){
+    public Result decrCount(@RequestParam Map<String, Integer> decrmap){
          skuService.deductionNum(decrmap);
          return new Result(true,StatusCode.OK,"库存扣减失败");
     }

@@ -16,11 +16,11 @@ public class RabbitmqConfig {
     public static final String ROUTING_KEY_HTML="inform.#.html.#";
 
     @Value("${mq.pay.exchange.order}")
-    private static  String  EXCHANGE_QUEUE_ORDER;
+    public  String  EXCHANGE_QUEUE_ORDER;
     @Value("${mq.pay.queue.order}")
-    private static String QUEUE_PAY_ORDER;
+    public  String QUEUE_PAY_ORDER;
     @Value("${mq.pay.routing.key}")
-    private String ROUTING_KEY_PAY;
+    public  String ROUTING_KEY_PAY;
 
     /*
     * 声明交换机
@@ -67,7 +67,7 @@ public class RabbitmqConfig {
     }
 
 
-    //声明队列
+    //声明队列 订单消息队列
     @Bean("queue_order")
     public Queue QUEUE_PAY_ORDER(){
         return new Queue(QUEUE_PAY_ORDER,true);
@@ -79,5 +79,9 @@ public class RabbitmqConfig {
         return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY_PAY).noargs();
     }
 
+    @Bean
+    public Queue QUEUE_ORDER_DELAY(){
+        return  new Queue("orderListenerQueue");
+    }
 
 }

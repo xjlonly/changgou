@@ -30,6 +30,12 @@ public class OrderController {
     @Autowired
     private TokenDecode tokenDecode;
 
+
+    @PostMapping(value = "/update/status")
+    public Result updateStatus(@RequestParam(name = "orderid") String orderId,@RequestParam(name = "transactionid") String transactionid) {
+             orderService.updateStatus(orderId,transactionid);
+             return new Result(true,StatusCode.OK,"修改订单成功");
+    }
     /***
      * Order分页条件搜索实现
      * @param order
