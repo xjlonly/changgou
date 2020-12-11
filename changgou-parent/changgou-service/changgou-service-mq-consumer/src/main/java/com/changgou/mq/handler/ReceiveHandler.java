@@ -97,7 +97,7 @@ public class ReceiveHandler {
     }
 
 
-    @RabbitListener(queues = {"orderDelayQueue"})
+    @RabbitListener(queues = {"orderListenerQueue"})
     public void receiver_order_delay(Object obj, Message message, Channel channel){
         String msg = new String(message.getBody());
 
