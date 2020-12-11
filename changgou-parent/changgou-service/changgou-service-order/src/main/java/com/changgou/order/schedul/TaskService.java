@@ -36,14 +36,18 @@ public class TaskService {
     private RedisTemplate redisTemplate;
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    @Scheduled(initialDelay = 10_000,fixedRate = 50_000)
+    @Scheduled(initialDelay = 10_000,fixedRate = 150_000)
     public void OrderQueryStatus(){
         logger.info("读取redis内订单信息...");
         var result =  redisTemplate.boundHashOps("Order");
-        result.keys().forEach(id->{
-            var resultMap =  weixinPayFeign.queryStatus(id.toString());
-            //获取订单支付状态 更新订单信息
-            logger.info(resultMap.getData().toString());
-        });
+        var keys = result.keys();
+        if(keys != null && !keys.isEmpty()){
+            keys.forEach(id->{
+                var resultMap =  weixinPayFeign.queryStatus(id.toString());
+                //获取订单支付状态 更新订单信息
+                logger.info(resultMap.getData().toString());
+            });
+        }
+
     }
 }
