@@ -29,11 +29,10 @@ public class SeckillGoodsPushTask {
     Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired private SeckillGoodsMapper seckillGoodsMapper;
-    @Autowired private RedisTemplate redisTemplate;
+    @Autowired private RedisTemplate<String,Object> redisTemplate;
 
     @Scheduled(cron = "0/30 * * * * ? ")
     public void loadGoodsPushRedis(){
-        logger.info("task run...");
 
         //获取时间段集合
         List<Date> dateMenus = DateUtil.getDateMenus();
@@ -62,7 +61,8 @@ public class SeckillGoodsPushTask {
 
             //将秒杀商品数据存入到Redis缓存
             for (SeckillGoods seckillGood : seckillGoods) {
-                redisTemplate.boundHashOps("SeckillGoods_"+extName).put(seckillGood.getId(),seckillGood);
+                logger.info("商品存入数据库：{}", seckillGood.getId());
+                redisTemplate.boundHashOps("SeckillGoods_"+extName).put(seckillGood.getId().toString(),seckillGood);
                 redisTemplate.expireAt("SeckillGoods_"+extName,DateUtil.addDateHour(startTime, 2));
 
             }

@@ -3,12 +3,14 @@ package com.changgou.seckill.controller;
 import com.changgou.seckill.pojo.SeckillGoods;
 import com.changgou.seckill.service.SeckillGoodsService;
 import com.github.pagehelper.PageInfo;
+import entity.DateUtil;
 import entity.Result;
 import entity.StatusCode;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 
@@ -21,6 +23,33 @@ public class SeckillGoodsController {
     @Autowired
     private SeckillGoodsService seckillGoodsService;
 
+    /*****
+     * 获取时间菜单
+     * URLL:/seckill/goods/menus
+     */
+    @RequestMapping(value = "/menus")
+    public List<Date> dateMenus(){
+        return DateUtil.getDateMenus();
+    }
+
+    @RequestMapping(value = "/list")
+    public Result<List<SeckillGoods>> list(String time){
+       var seckillGoods = seckillGoodsService.list(time);
+        return new Result<>(true,StatusCode.OK,"查询成功", seckillGoods);
+    }
+
+    /****
+     * URL:/seckill/goods/one
+     * 根据ID查询商品详情
+     * 调用Service查询商品详情
+     * @param time
+     * @param id
+     */
+    @RequestMapping(value = "/one")
+    public SeckillGoods one(String time,Long id){
+        //调用Service查询商品详情
+        return seckillGoodsService.one(time,id);
+    }
     /***
      * SeckillGoods分页条件搜索实现
      * @param seckillGoods

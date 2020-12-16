@@ -21,6 +21,7 @@ public class SeckillOrderController {
     @Autowired
     private SeckillOrderService seckillOrderService;
 
+
     /***
      * SeckillOrder分页条件搜索实现
      * @param seckillOrder
@@ -71,48 +72,34 @@ public class SeckillOrderController {
         return new Result<List<SeckillOrder>>(true,StatusCode.OK,"查询成功",list);
     }
 
-    /***
-     * 根据ID删除品牌数据
-     * @param id
-     * @return
-     */
-    @ApiOperation(value = "SeckillOrder根据ID删除",notes = "根据ID删除SeckillOrder方法详情",tags = {"SeckillOrderController"})
-    @ApiImplicitParam(paramType = "path", name = "id", value = "主键ID", required = true, dataType = "Long")
-    @DeleteMapping(value = "/{id}" )
-    public Result delete(@PathVariable Long id){
-        //调用SeckillOrderService实现根据主键删除
-        seckillOrderService.delete(id);
-        return new Result(true,StatusCode.OK,"删除成功");
-    }
 
-    /***
-     * 修改SeckillOrder数据
-     * @param seckillOrder
-     * @param id
-     * @return
-     */
-    @ApiOperation(value = "SeckillOrder根据ID修改",notes = "根据ID修改SeckillOrder方法详情",tags = {"SeckillOrderController"})
-    @ApiImplicitParam(paramType = "path", name = "id", value = "主键ID", required = true, dataType = "Long")
-    @PutMapping(value="/{id}")
-    public Result update(@RequestBody @ApiParam(name = "SeckillOrder对象",value = "传入JSON数据",required = false) SeckillOrder seckillOrder,@PathVariable Long id){
-        //设置主键值
-        seckillOrder.setId(id);
-        //调用SeckillOrderService实现修改SeckillOrder
-        seckillOrderService.update(seckillOrder);
-        return new Result(true,StatusCode.OK,"修改成功");
-    }
 
-    /***
-     * 新增SeckillOrder数据
-     * @param seckillOrder
-     * @return
+
+    /****
+     * URL:/seckill/order/add
+     * 添加订单
+     * 调用Service增加订单
+     * 匿名访问：anonymousUser
+     * @param time
+     * @param id
      */
-    @ApiOperation(value = "SeckillOrder添加",notes = "添加SeckillOrder方法详情",tags = {"SeckillOrderController"})
-    @PostMapping
-    public Result add(@RequestBody  @ApiParam(name = "SeckillOrder对象",value = "传入JSON数据",required = true) SeckillOrder seckillOrder){
-        //调用SeckillOrderService实现添加SeckillOrder
-        seckillOrderService.add(seckillOrder);
-        return new Result(true,StatusCode.OK,"添加成功");
+    @RequestMapping(value = "/add")
+    public Result add(String time, Long id){
+        try {
+            //用户登录名
+            //String username = TokenDcode.getUserInfo().get("username");
+            String username = "test";
+            //调用Service增加订单
+            Boolean bo = seckillOrderService.add(id, time, username);
+
+            if(bo){
+                //抢单成功
+                return new Result(true,StatusCode.OK,"抢单成功！");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new Result(true,StatusCode.ERROR,"服务器繁忙，请稍后再试");
     }
 
     /***

@@ -5,7 +5,9 @@ import com.changgou.seckill.pojo.SeckillGoods;
 import com.changgou.seckill.service.SeckillGoodsService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import entity.Result;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import tk.mybatis.mapper.entity.Example;
@@ -23,6 +25,22 @@ public class SeckillGoodsServiceImpl implements SeckillGoodsService {
     @Autowired
     private SeckillGoodsMapper seckillGoodsMapper;
 
+    @Autowired private RedisTemplate redisTemplate;
+
+    @Override
+    public List<SeckillGoods> list(String time) {
+        return  redisTemplate.boundHashOps("SeckillGoods_" + time).values();
+    }
+    /****
+     * 根据商品ID查询商品详情
+     * @param time:时间区间
+     * @param id:商品ID
+     * @return
+     */
+    @Override
+    public SeckillGoods one(String time, Long id) {
+        return (SeckillGoods) redisTemplate.boundHashOps("SeckillGoods_"+time).get(id);
+    }
 
     /**
      * SeckillGoods条件+分页查询

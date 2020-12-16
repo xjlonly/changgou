@@ -2,6 +2,7 @@ package com.changgou.seckill.service;
 
 import com.changgou.seckill.pojo.SeckillGoods;
 import com.github.pagehelper.PageInfo;
+import entity.Result;
 
 import java.util.List;
 
@@ -11,6 +12,16 @@ import java.util.List;
  * @Date 2019/6/14 0:16
  *****/
 public interface SeckillGoodsService {
+
+    List<SeckillGoods> list(String time);
+
+
+    /****
+     * 根据ID查询商品详情
+     * @param time:时间区间
+     * @param id:商品ID
+     */
+    SeckillGoods one(String time,Long id);
 
     /***
      * SeckillGoods多条件分页查询

@@ -36,23 +36,16 @@ public interface SeckillOrderService {
      */
     List<SeckillOrder> findList(SeckillOrder seckillOrder);
 
-    /***
-     * 删除SeckillOrder
-     * @param id
-     */
-    void delete(Long id);
+
 
     /***
-     * 修改SeckillOrder数据
-     * @param seckillOrder
+     * 添加秒杀订单
+     * @param id:商品ID
+     * @param time:商品秒杀开始时间
+     * @param username:用户登录名
+     * @return
      */
-    void update(SeckillOrder seckillOrder);
-
-    /***
-     * 新增SeckillOrder
-     * @param seckillOrder
-     */
-    void add(SeckillOrder seckillOrder);
+    Boolean add(Long id, String time, String username);
 
     /**
      * 根据ID查询SeckillOrder

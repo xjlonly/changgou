@@ -1,15 +1,20 @@
 package com.changgou.seckill.service.impl;
 
+import com.changgou.seckill.dao.SeckillGoodsMapper;
 import com.changgou.seckill.dao.SeckillOrderMapper;
+import com.changgou.seckill.pojo.SeckillGoods;
 import com.changgou.seckill.pojo.SeckillOrder;
 import com.changgou.seckill.service.SeckillOrderService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import entity.IdWorker;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import tk.mybatis.mapper.entity.Example;
 
+import java.util.Date;
 import java.util.List;
 
 /****
@@ -23,6 +28,52 @@ public class SeckillOrderServiceImpl implements SeckillOrderService {
     @Autowired
     private SeckillOrderMapper seckillOrderMapper;
 
+    @Autowired private RedisTemplate redisTemplate;
+
+    @Autowired private IdWorker idWorker;
+
+    @Autowired private SeckillGoodsMapper seckillGoodsMapper;
+    /**
+     * @author: xjlonly
+     * @description: 秒杀下单
+     * @date: 2020/12/16 15:38
+     * @Param: null
+     * @return
+     */
+    @Override
+    public Boolean add(Long id, String time, String username) {
+        SeckillGoods seckillGood = (SeckillGoods)redisTemplate.boundHashOps("SeckillGoods_" + time).get(id.toString());
+
+        if(seckillGood == null || seckillGood.getStockCount() <= 0){
+            throw  new RuntimeException("已售罄");
+        }
+        //如果有库存，则创建秒杀商品订单
+        SeckillOrder seckillOrder = new SeckillOrder();
+        seckillOrder.setId(idWorker.nextId());
+        seckillOrder.setSeckillId(id);
+        seckillOrder.setMoney(seckillGood.getCostPrice());
+        seckillOrder.setUserId(username);
+        seckillOrder.setCreateTime(new Date());
+        seckillOrder.setStatus("0");
+
+
+        //将秒杀订单存入redis
+        redisTemplate.boundHashOps("SeckillOrder").put(username, seckillOrder);
+        //库存减少
+        seckillGood.setStockCount(seckillGood.getStockCount()-1);
+        //判断当前商品是否还有库存
+        if(seckillGood.getStockCount()<=0){
+            //并且将商品数据同步到MySQL中
+            seckillGoodsMapper.updateByPrimaryKeySelective(seckillGood);
+            //如果没有库存,则清空Redis缓存中该商品
+            redisTemplate.boundHashOps("SeckillGoods_" + time).delete(id.toString());
+        }else{
+            //如果有库存，则直数据重置到Reids中
+            redisTemplate.boundHashOps("SeckillGoods_" + time).put(id.toString(),seckillGood);
+        }
+
+        return true;
+    }
 
     /**
      * SeckillOrder条件+分页查询
@@ -126,32 +177,6 @@ public class SeckillOrderServiceImpl implements SeckillOrderService {
         return example;
     }
 
-    /**
-     * 删除
-     * @param id
-     */
-    @Override
-    public void delete(Long id){
-        seckillOrderMapper.deleteByPrimaryKey(id);
-    }
-
-    /**
-     * 修改SeckillOrder
-     * @param seckillOrder
-     */
-    @Override
-    public void update(SeckillOrder seckillOrder){
-        seckillOrderMapper.updateByPrimaryKey(seckillOrder);
-    }
-
-    /**
-     * 增加SeckillOrder
-     * @param seckillOrder
-     */
-    @Override
-    public void add(SeckillOrder seckillOrder){
-        seckillOrderMapper.insert(seckillOrder);
-    }
 
     /**
      * 根据ID查询SeckillOrder

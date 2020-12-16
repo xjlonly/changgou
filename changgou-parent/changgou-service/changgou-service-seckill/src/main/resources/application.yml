@@ -48,4 +48,4 @@ logging:
     com:
       changgou:
         seckill:
-          dao: DEBUG
+          dao: Info
