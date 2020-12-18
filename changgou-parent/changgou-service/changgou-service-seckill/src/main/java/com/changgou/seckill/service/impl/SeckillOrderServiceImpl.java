@@ -5,9 +5,12 @@ import com.changgou.seckill.dao.SeckillOrderMapper;
 import com.changgou.seckill.pojo.SeckillGoods;
 import com.changgou.seckill.pojo.SeckillOrder;
 import com.changgou.seckill.service.SeckillOrderService;
+import com.changgou.seckill.timer.MultiThreadingCreateOrder;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import entity.IdWorker;
+import entity.SeckillStatus;
+import entity.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -33,6 +36,19 @@ public class SeckillOrderServiceImpl implements SeckillOrderService {
     @Autowired private IdWorker idWorker;
 
     @Autowired private SeckillGoodsMapper seckillGoodsMapper;
+
+    @Autowired private MultiThreadingCreateOrder multiThreadingCreateOrder;
+
+    /***
+     * 抢单状态查询
+     * @param username
+     * @return
+     */
+    @Override
+    public SeckillStatus queryStatus(String username) {
+        return (SeckillStatus) redisTemplate.boundHashOps("UserQueueStatus").get(username);
+    }
+
     /**
      * @author: xjlonly
      * @description: 秒杀下单
@@ -42,82 +58,25 @@ public class SeckillOrderServiceImpl implements SeckillOrderService {
      */
     @Override
     public Boolean add(Long id, String time, String username) {
-        SeckillGoods seckillGood = (SeckillGoods)redisTemplate.boundHashOps("SeckillGoods_" + time).get(id.toString());
 
-        if(seckillGood == null || seckillGood.getStockCount() <= 0){
-            throw  new RuntimeException("已售罄");
+        Long userQueueCount =  redisTemplate.boundHashOps("UserQueueCount").increment(username,1);
+        if(userQueueCount > 1){
+            //100：表示有重复抢单
+            throw new RuntimeException(String.valueOf(StatusCode.REPERROR));
         }
-        //如果有库存，则创建秒杀商品订单
-        SeckillOrder seckillOrder = new SeckillOrder();
-        seckillOrder.setId(idWorker.nextId());
-        seckillOrder.setSeckillId(id);
-        seckillOrder.setMoney(seckillGood.getCostPrice());
-        seckillOrder.setUserId(username);
-        seckillOrder.setCreateTime(new Date());
-        seckillOrder.setStatus("0");
+        //排队信息封装
+        SeckillStatus seckillStatus = new SeckillStatus(username, new Date(),1, id,time);
 
+        //将秒杀抢单信息存入到Redis中,这里采用List方式存储,List本身是一个队列
+        redisTemplate.boundListOps("SeckillOrderQueue").leftPush(seckillStatus);
 
-        //将秒杀订单存入redis
-        redisTemplate.boundHashOps("SeckillOrder").put(username, seckillOrder);
-        //库存减少
-        seckillGood.setStockCount(seckillGood.getStockCount()-1);
-        //判断当前商品是否还有库存
-        if(seckillGood.getStockCount()<=0){
-            //并且将商品数据同步到MySQL中
-            seckillGoodsMapper.updateByPrimaryKeySelective(seckillGood);
-            //如果没有库存,则清空Redis缓存中该商品
-            redisTemplate.boundHashOps("SeckillGoods_" + time).delete(id.toString());
-        }else{
-            //如果有库存，则直数据重置到Reids中
-            redisTemplate.boundHashOps("SeckillGoods_" + time).put(id.toString(),seckillGood);
-        }
+        //将抢单状态存入到Redis中
+        redisTemplate.boundHashOps("UserQueueStatus").put(username,seckillStatus);
+        multiThreadingCreateOrder.createOrder();
 
         return true;
     }
 
-    /**
-     * SeckillOrder条件+分页查询
-     * @param seckillOrder 查询条件
-     * @param page 页码
-     * @param size 页大小
-     * @return 分页结果
-     */
-    @Override
-    public PageInfo<SeckillOrder> findPage(SeckillOrder seckillOrder, int page, int size){
-        //分页
-        PageHelper.startPage(page,size);
-        //搜索条件构建
-        Example example = createExample(seckillOrder);
-        //执行搜索
-        return new PageInfo<SeckillOrder>(seckillOrderMapper.selectByExample(example));
-    }
-
-    /**
-     * SeckillOrder分页查询
-     * @param page
-     * @param size
-     * @return
-     */
-    @Override
-    public PageInfo<SeckillOrder> findPage(int page, int size){
-        //静态分页
-        PageHelper.startPage(page,size);
-        //分页查询
-        return new PageInfo<SeckillOrder>(seckillOrderMapper.selectAll());
-    }
-
-    /**
-     * SeckillOrder条件查询
-     * @param seckillOrder
-     * @return
-     */
-    @Override
-    public List<SeckillOrder> findList(SeckillOrder seckillOrder){
-        //构建查询条件
-        Example example = createExample(seckillOrder);
-        //根据构建的条件查询数据
-        return seckillOrderMapper.selectByExample(example);
-    }
 
 
     /**
@@ -178,22 +137,4 @@ public class SeckillOrderServiceImpl implements SeckillOrderService {
     }
 
 
-    /**
-     * 根据ID查询SeckillOrder
-     * @param id
-     * @return
-     */
-    @Override
-    public SeckillOrder findById(Long id){
-        return  seckillOrderMapper.selectByPrimaryKey(id);
-    }
-
-    /**
-     * 查询SeckillOrder全部数据
-     * @return
-     */
-    @Override
-    public List<SeckillOrder> findAll() {
-        return seckillOrderMapper.selectAll();
-    }
 }

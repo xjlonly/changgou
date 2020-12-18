@@ -6,6 +6,7 @@ import com.changgou.seckill.service.SeckillGoodsService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import entity.Result;
+import entity.SeckillStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,8 @@ public class SeckillGoodsServiceImpl implements SeckillGoodsService {
     private SeckillGoodsMapper seckillGoodsMapper;
 
     @Autowired private RedisTemplate redisTemplate;
+
+
 
     @Override
     public List<SeckillGoods> list(String time) {
