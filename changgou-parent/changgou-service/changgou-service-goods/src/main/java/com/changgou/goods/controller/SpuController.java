@@ -116,8 +116,8 @@ public class SpuController {
     @PostMapping("/goods/deduction")
     public Result<Goods> deductionNum(@RequestBody Long id, @RequestBody int num){
         //根据ID查询Goods(SPU+SKU)信息
-        Map<Long, Integer> map = new HashMap<Long,Integer>();
-        map.put(id, num);
+        Map<String, Integer> map = new HashMap<String ,Integer>();
+        map.put(id.toString(), num);
         var rel = skuService.deductionNum(map);
         return new Result<Goods>(rel, rel ?  StatusCode.OK : StatusCode.ERROR,"查询成功");
     }

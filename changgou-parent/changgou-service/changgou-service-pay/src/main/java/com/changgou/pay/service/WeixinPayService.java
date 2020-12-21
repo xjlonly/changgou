@@ -17,7 +17,7 @@ public interface WeixinPayService {
      * @param total_fee    : 交易金额,单位：分
      * @return
      */
-    public Map createNative(String out_trade_no, String total_fee);
+    public Map createNative(Map<String,String> parameterMap);
 
 
     /***

@@ -57,4 +57,28 @@ public class PayApplication {
     public Binding basicBinding(){
         return BindingBuilder.bind(queueOrder()).to(basicExchange()).with(env.getProperty("mq.pay.routing.key"));
     }
+
+
+
+
+    /***
+     * 创建秒杀队列
+     * @return
+     */
+    @Bean(name = "queueSeckillOrder")
+    public Queue queueSeckillOrder(){
+        return new Queue(env.getProperty("mq.pay.queue.seckillorder"), true);
+    }
+
+    /****
+     * 队列绑定到交换机上
+     * @return
+     */
+    @Bean
+    public Binding basicBindingSeckillOrder(){
+        return BindingBuilder
+                .bind(queueSeckillOrder())
+                .to(basicExchange())
+                .with(env.getProperty("mq.pay.routing.seckillorderkey"));
+    }
 }

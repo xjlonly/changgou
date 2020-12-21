@@ -67,6 +67,7 @@ public class SeckillOrderServiceImpl implements SeckillOrderService {
         //排队信息封装
         SeckillStatus seckillStatus = new SeckillStatus(username, new Date(),1, id,time);
 
+        //需设置超时时间
         //将秒杀抢单信息存入到Redis中,这里采用List方式存储,List本身是一个队列
         redisTemplate.boundListOps("SeckillOrderQueue").leftPush(seckillStatus);
 

@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.Schedules;
 import org.springframework.stereotype.Component;
 import tk.mybatis.mapper.entity.Example;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -64,9 +65,17 @@ public class SeckillGoodsPushTask {
                 logger.info("商品存入数据库：{}", seckillGood.getId());
                 redisTemplate.boundHashOps("SeckillGoods_"+extName).put(seckillGood.getId().toString(),seckillGood);
                 redisTemplate.expireAt("SeckillGoods_"+extName,DateUtil.addDateHour(startTime, 2));
-
+                //给每个商品做个队列
+                redisTemplate.boundListOps("SeckillGoodsQueue_" + seckillGood.getId())
+                        .leftPushAll(putAllIds(seckillGood.getStockCount(),seckillGood.getId()));
             }
         }
 
+    }
+
+    public Long[] putAllIds(Integer num, Long id){
+        Long[] ids = new Long[num];
+        Arrays.fill(ids, id);
+        return ids;
     }
 }

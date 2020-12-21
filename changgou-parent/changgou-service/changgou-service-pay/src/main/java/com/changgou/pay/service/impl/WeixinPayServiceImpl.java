@@ -1,11 +1,14 @@
 package com.changgou.pay.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.changgou.pay.service.WeixinPayService;
 import com.github.wxpay.sdk.WXPayUtil;
 import com.mysql.cj.exceptions.StreamingNotifiable;
 import entity.HttpClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import springfox.documentation.spring.web.json.Json;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +35,7 @@ public class WeixinPayServiceImpl implements WeixinPayService {
     private String notifyurl;
 
     @Override
-    public Map createNative(String out_trade_no, String total_fee) {
+    public Map createNative(Map<String,String> parameterMap) {
         try {
             //1、封装参数
             Map<String, String> param = new HashMap<String,String>();
@@ -40,11 +43,24 @@ public class WeixinPayServiceImpl implements WeixinPayService {
             param.put("mch_id", partner);                           //商户ID号
             param.put("nonce_str", WXPayUtil.generateNonceStr());   //随机数
             param.put("body", "在线订单-飞天茅台");                            	//订单描述
-            param.put("out_trade_no",out_trade_no);                 //商户订单号
-            param.put("total_fee", total_fee);                      //交易金额
+            param.put("out_trade_no", parameterMap.get("outtradeno"));                 //商户订单号
+            param.put("total_fee", parameterMap.get("totalfee"));                      //交易金额
             param.put("spbill_create_ip", "127.0.0.1");           //终端IP
             param.put("notify_url", notifyurl);                    //回调地址
-            param.put("trade_type", "NATIVE");                     //交易类型
+            param.put("trade_type", "NATIVE");                      //交易类型
+
+            String exchange = parameterMap.get("exchange");
+            String routingKey = parameterMap.get("queue");
+            String username = parameterMap.get("username");
+            Map<String,String> attchMap = new HashMap<>();
+            attchMap.put("exchange", exchange);
+            attchMap.put("routingkey", routingKey);
+            //如果是秒杀订单 需要获取用户名
+            if(!StringUtils.isEmpty(username)){
+                attchMap.put("username",username);
+            }
+            String attach = JSON.toJSONString(attchMap);
+            param.put("attach",attach);                             //商家数据包
 
             //2、将参数转成xml字符，并携带签名
             String paramXml = WXPayUtil.generateSignedXml(param, partnerkey);
@@ -63,8 +79,8 @@ public class WeixinPayServiceImpl implements WeixinPayService {
             //5、获取部分页面所需参数
             Map<String,String> dataMap = new HashMap<String,String>();
             dataMap.put("code_url",stringMap.get("code_url"));
-            dataMap.put("out_trade_no",out_trade_no);
-            dataMap.put("total_fee",total_fee);
+            dataMap.put("out_trade_no",parameterMap.get("outtradeno"));
+            dataMap.put("total_fee",parameterMap.get("totalfee"));
 
             return dataMap;
         } catch (Exception e) {

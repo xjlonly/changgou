@@ -9,10 +9,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.aop.framework.autoproxy.AbstractAdvisorAutoProxyCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayOutputStream;
@@ -53,8 +50,8 @@ public class WeixinPayController {
      * @return
      */
     @RequestMapping(value = "/create/native")
-    public Result createNative(String outtradeno, String money){
-        Map<String,String> resultMap = weixinPayService.createNative(outtradeno,money);
+    public Result createNative(@RequestParam Map<String,String> parameterMap){
+        Map<String,String> resultMap = weixinPayService.createNative(parameterMap);
         return new Result(true, StatusCode.OK,"创建二维码预付订单成功！",resultMap);
     }
 
@@ -100,8 +97,11 @@ public class WeixinPayController {
             //将xml字符串转换成Map结构
             Map<String, String> map = WXPayUtil.xmlToMap(result);
 
+            String attach = map.get("attach");
+            Map<String,String> attachMap = JSON.parseObject(attach,Map.class);
             //将消息发送给RabbitMQ
-            rabbitTemplate.convertAndSend(exchange,routing, JSON.toJSONString(map));
+            rabbitTemplate.convertAndSend(attachMap.get("exchange"),attachMap.get("routingkey"),
+                    JSON.toJSONString(map));
 
             //响应数据设置
             Map respMap = new HashMap();
